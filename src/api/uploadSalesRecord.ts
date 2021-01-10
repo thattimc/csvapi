@@ -63,6 +63,6 @@ export async function uploadSalesRecord (req: Request, res: Response, next: Next
 
   const csvTempFile = formData.files[''] as formidable.File
   processFile(csvTempFile.path)
-    
+
   res.json({ message: 'Uploaded CSV file' })
 }
