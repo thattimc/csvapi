@@ -5,6 +5,7 @@
 - [x] `/sales/report` To query data with JSON format response.
 - [x] `/sales/report` User should be able to query with date inputs (single date or date range).
 - [x] Use of any popular server framework
+- [x] Include unit tests and end-to-end tests to cover different use cases
 - [x] You can assume the CSV data file is a very big file. e.g. 1GB or bigger
 - [x] Implement data storage with in-memory or actual database
 ## For setup local development
@@ -13,12 +14,6 @@ Install all packages
 
 ```
 yarn
-```
-
-Generate CSV file for testing csv upload
-
-```
-yarn seed
 ```
 
 Setup local postgresql with `mydb` as db name, then rename `.env.exmaple` to `.env`
