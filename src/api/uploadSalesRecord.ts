@@ -1,0 +1,68 @@
+import { NextFunction, Request, Response } from "express"
+
+import formParse from '../lib/formParse'
+import formidable from 'formidable'
+import fs from 'fs'
+import parse from 'csv-parse'
+import prisma from '../../src/lib/prisma'
+
+type TRecord = {
+  USER_NAME: string
+  AGE: string
+  HEIGHT: string
+  GENDER: string
+  SALE_AMOUNT: string
+  LAST_PURCHASE_DATE: string
+}
+
+async function bulkDbImport(records: TRecord[]) {
+  const writes: Promise<any>[] = []
+  records.forEach((sale) => {
+    writes.push(
+      prisma.$executeRaw(
+        `INSERT INTO "Sale" (user_name, age, height, gender, sale_amount, last_purchase_date) VALUES ($1, $2, $3, $4, $5, $6)`,
+        sale.USER_NAME,
+        Number(sale.AGE),
+        Number(sale.HEIGHT),
+        sale.GENDER,
+        Number(sale.SALE_AMOUNT),
+        new Date(sale.LAST_PURCHASE_DATE)
+      )
+    )
+  })
+  await prisma.$transaction(writes)
+}
+
+function processFile(file: string) {
+  return new Promise((resolve, reject) => {
+    let records: TRecord[] = []
+    const parser = fs.createReadStream(file).pipe(parse({ columns: true }))
+    parser.on('readable', async function () {
+      let record
+      while ((record = parser.read())) {
+        records.push(record)
+        if (records.length === 1000) {
+          await bulkDbImport(records)
+          records = []
+        }
+      }
+    })
+    parser.on('error', function (err: Error) {
+      reject(err.message)
+    })
+    parser.on('end', async function () {
+      await bulkDbImport(records)
+      records = []
+      resolve('DB Imported')
+    })
+  })
+}
+
+export async function uploadSalesRecord (req: Request, res: Response, next: NextFunction) {
+  const formData = await formParse(req)
+
+  const csvTempFile = formData.files[''] as formidable.File
+  processFile(csvTempFile.path)
+    
+  res.json({ message: 'Uploaded CSV file' })
+}

@@ -6,7 +6,7 @@ import faker from 'faker'
 type BufferEncoding = "ascii" | "utf8" | "utf-8" | "utf16le" | "ucs2" | "ucs-2" | "base64" | "latin1" | "binary" | "hex"
 
 function writeHugeSales(writer: WriteStream, encoding: BufferEncoding, callback: () => void) {
-  let i = 10000000
+  let i = 100000
   let id = 0
   function write() {
     let ok = true
